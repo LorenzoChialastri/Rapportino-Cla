@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rapportino di Lavoro – CLA Compressori</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#F5F5F3;color:#1C1C1C;min-height:100vh}
+
+/* HEADER */
+.app-header{background:#fff;border-bottom:1px solid #E0E0DC;padding:14px 16px 10px;position:sticky;top:0;z-index:100}
+.header-logo{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.header-logo img{height:32px;width:auto}
+.header-info{font-size:11px;color:#888;line-height:1.5}
+.header-doc{display:flex;justify-content:space-between;align-items:center}
+.header-doc .title{font-size:15px;font-weight:600;color:#1C1C1C}
+.header-doc .rapnum{font-size:12px;color:#888}
+
+/* STEPS BAR */
+.steps-bar{display:flex;gap:5px;padding:10px 16px;background:#fff;border-bottom:1px solid #E8E8E4}
+.step-dot{flex:1;height:3px;border-radius:2px;background:#E0E0DC;transition:background .3s}
+.step-dot.active{background:#1A4E8C}
+
+/* CONTENT */
+.content{padding:14px 16px 32px;max-width:600px;margin:0 auto}
+
+/* DRAFT BANNER */
+.draft-bar{display:none;align-items:center;justify-content:space-between;background:#EBF2FA;border:1px solid #B8D0EA;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#1A4E8C}
+.draft-bar.show{display:flex}
+.draft-bar button{font-size:13px;background:none;border:none;cursor:pointer;color:#1A4E8C;font-weight:500;padding:0}
+
+/* SECTIONS */
+.section{background:#fff;border:1px solid #E8E8E4;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.section-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.section-title svg{flex-shrink:0}
+
+/* FIELDS */
+.field{margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:4px;font-weight:500}
+.field input,.field textarea,.field select{
+  width:100%;font-size:15px;padding:10px 12px;
+  border:1px solid #E0E0DC;border-radius:10px;
+  background:#FAFAF8;color:#1C1C1C;
+  font-family:inherit;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#1A4E8C;background:#fff}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* TECNICI */
+.tec-list{display:flex;flex-direction:column;gap:7px}
+.tec-chip{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid #E0E0DC;border-radius:10px;cursor:pointer;background:#FAFAF8;transition:all .15s;user-select:none}
+.tec-chip.sel{background:#EBF2FA;border-color:#1A4E8C}
+.tec-chk{width:20px;height:20px;border:1.5px solid #CCC;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.tec-chip.sel .tec-chk{background:#1A4E8C;border-color:#1A4E8C}
+.tec-chk-mark{display:none;color:#fff;font-size:13px;font-weight:700;line-height:1}
+.tec-chip.sel .tec-chk-mark{display:block}
+.tec-name{font-size:15px;color:#1C1C1C}
+
+/* RICAMBI */
+.ric-card{border:1px solid #E8E8E4;border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#FAFAF8;position:relative}
+.ric-card input{width:100%;font-size:14px;padding:7px 10px;border:1px solid #E0E0DC;border-radius:8px;background:#fff;color:#1C1C1C;font-family:inherit;outline:none;margin-top:4px}
+.ric-card input:focus{border-color:#1A4E8C}
+.ric-card label{font-size:11px;color:#888;font-weight:500}
+.ric-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.ric-del{position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;color:#BBB;font-size:22px;line-height:1;padding:0}
+.ric-del:hover{color:#E24B4A}
+
+/* MAT ROWS */
+.mat-row{display:flex;gap:8px;margin-bottom:7px;align-items:center}
+.mat-row input{font-size:14px;padding:8px 10px;border:1px solid #E0E0DC;border-radius:8px;background:#FAFAF8;color:#1C1C1C;font-family:inherit;outline:none}
+.mat-row input:focus{border-color:#1A4E8C}
+.mat-del{background:none;border:none;cursor:pointer;color:#BBB;font-size:22px;line-height:1;padding:0 4px;flex-shrink:0}
+
+.add-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:#1A4E8C;background:none;border:none;cursor:pointer;padding:4px 0;font-weight:500}
+
+/* FIRMA */
+.sig-wrap{border:1.5px dashed #C8C8C4;border-radius:10px;position:relative;height:130px;cursor:crosshair;touch-action:none;background:#FAFAF8;margin-top:6px}
+.sig-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;color:#BBB;pointer-events:none;white-space:nowrap}
+.sig-clear{position:absolute;top:7px;right:10px;font-size:12px;color:#888;background:none;border:none;cursor:pointer;padding:2px 8px;border-radius:6px;background:#fff;border:1px solid #E0E0DC}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:14px;background:#1A4E8C;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:.01em;transition:opacity .15s}
+.btn-primary:active{opacity:.85}
+.btn-secondary{width:100%;padding:13px;background:#fff;color:#1C1C1C;border:1px solid #E0E0DC;border-radius:12px;font-size:15px;cursor:pointer;transition:background .15s}
+.btn-secondary:active{background:#F5F5F3}
+.btn-nav{display:flex;gap:10px;margin-top:6px}
+.btn-nav .btn-secondary{flex:1}
+.btn-nav .btn-primary{flex:2}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1C1C1C;color:#fff;padding:11px 22px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{opacity:1}
+
+/* STEPS */
+#step1,#step2,#step3{display:none}
+#step1{display:block}
+</style>
+</head>
+<body>
+
+<!-- APP HEADER -->
+<div class="app-header">
+  <div class="header-logo">
+    <img src="data:image/jpeg;base64,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" alt="CLA Compressori">
+    <div class="header-info">
+      Via del Poggio 2 – 04011 Aprilia (LT) &nbsp;·&nbsp; P.IVA 02954480592<br>
+      Tel. 06 86925851 &nbsp;·&nbsp; N. Verde +39 027 442285 &nbsp;·&nbsp; info@clacompressori.it
+    </div>
+  </div>
+  <div class="header-doc">
+    <span class="title">Rapportino di lavoro</span>
+    <span class="rapnum">N° <span id="rnum"></span> &nbsp;·&nbsp; <span id="rdate"></span></span>
+  </div>
+</div>
+
+<!-- STEPS BAR -->
+<div class="steps-bar">
+  <div class="step-dot active" id="dot1"></div>
+  <div class="step-dot" id="dot2"></div>
+  <div class="step-dot" id="dot3"></div>
+</div>
+
+<div class="content">
+
+  <!-- DRAFT BANNER -->
+  <div class="draft-bar" id="draft-bar">
+    <span>📋 Bozza salvata</span>
+    <div style="display:flex;gap:14px">
+      <button onclick="loadDraft()">↩ Riprendi</button>
+      <button onclick="clearDraft()" style="color:#888;font-weight:400">Elimina</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 1 ═══════════ -->
+  <div id="step1">
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Dati cliente
+      </div>
+      <div class="field"><label>Ragione sociale *</label><input id="cli-nome" type="text" placeholder="Es. Officine Rossi Srl" oninput="autosave()"></div>
+      <div class="row2">
+        <div class="field"><label>Partita IVA</label><input id="cli-piva" type="text" placeholder="IT00000000000" oninput="autosave()"></div>
+        <div class="field"><label>Cod. fiscale</label><input id="cli-cf" type="text" oninput="autosave()"></div>
+      </div>
+      <div class="field"><label>Indirizzo</label><input id="cli-addr" type="text" placeholder="Via, n°, città, CAP" oninput="autosave()"></div>
+      <div class="row2">
+        <div class="field"><label>Telefono</label><input id="cli-tel" type="tel" oninput="autosave()"></div>
+        <div class="field"><label>Email</label><input id="cli-email" type="email" oninput="autosave()"></div>
+      </div>
+      <div class="field"><label>Referente in loco</label><input id="cli-ref" type="text" placeholder="Nome cognome" oninput="autosave()"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Dati macchina
+      </div>
+      <div class="row2">
+        <div class="field"><label>Marca</label><input id="mac-marca" type="text" oninput="autosave()"></div>
+        <div class="field"><label>Modello</label><input id="mac-modello" type="text" oninput="autosave()"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Matricola</label><input id="mac-matricola" type="text" oninput="autosave()"></div>
+        <div class="field"><label>Ore utilizzo</label><input id="mac-ore" type="number" min="0" placeholder="0" oninput="autosave()"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Intervento
+      </div>
+      <div class="field"><label>Tipo di intervento *</label>
+        <select id="int-tipo" onchange="autosave()">
+          <option value="">Seleziona...</option>
+          <option>Manutenzione ordinaria</option>
+          <option>Manutenzione straordinaria</option>
+          <option>Riparazione guasto</option>
+          <option>Collaudo</option>
+          <option>Ispezione</option>
+          <option>Altro</option>
+        </select>
+      </div>
+      <div class="field"><label>Descrizione intervento eseguito *</label><textarea id="int-desc" placeholder="Descrivere le operazioni svolte..." oninput="autosave()"></textarea></div>
+      <div class="field"><label>Note aggiuntive</label><textarea id="int-note" placeholder="Osservazioni, anomalie riscontrate..." oninput="autosave()"></textarea></div>
+    </div>
+
+    <button class="btn-primary" onclick="goStep(2)">Avanti →</button>
+  </div>
+
+  <!-- ═══════════ STEP 2 ═══════════ -->
+  <div id="step2">
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Tecnici coinvolti
+      </div>
+      <div class="tec-list" id="tec-grid"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Manodopera e trasferta
+      </div>
+      <div class="row2">
+        <div class="field"><label>Ore ordinarie</label><input id="man-ord" type="number" min="0" step="0.5" placeholder="0.0" oninput="autosave()"></div>
+        <div class="field"><label>Ore straordinarie</label><input id="man-str" type="number" min="0" step="0.5" placeholder="0.0" oninput="autosave()"></div>
+      </div>
+      <div class="field"><label>Km percorsi</label><input id="man-km" type="number" min="0" placeholder="0" oninput="autosave()"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        Ricambi utilizzati
+      </div>
+      <div id="ric-list"></div>
+      <button class="add-btn" onclick="addRicambio()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Aggiungi ricambio
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.04"/></svg>
+        Materiale ritirato per smaltimento
+      </div>
+      <div id="smal-list"></div>
+      <button class="add-btn" onclick="addSmaltimento()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Aggiungi voce
+      </button>
+    </div>
+
+    <div class="btn-nav">
+      <button class="btn-secondary" onclick="goStep(1)">← Indietro</button>
+      <button class="btn-primary" onclick="goStep(3)">Avanti →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 3 ═══════════ -->
+  <div id="step3">
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Firma tecnico
+      </div>
+      <div class="field"><label>Tecnico firmatario</label>
+        <select id="tec-firma-sel" onchange="document.getElementById('tec-nome').value=this.value;autosave()">
+          <option value="">Seleziona...</option>
+        </select>
+      </div>
+      <input id="tec-nome" type="hidden">
+      <div class="sig-wrap" id="sigbox-tec">
+        <canvas id="canvas-tec" style="width:100%;height:100%"></canvas>
+        <div class="sig-hint">Firma qui con il dito</div>
+        <button class="sig-clear" onclick="clearSig('canvas-tec')">Cancella</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Firma cliente
+      </div>
+      <div class="field"><label>Nome firmatario *</label><input id="clit-nome" type="text" placeholder="Nome cognome" oninput="autosave()"></div>
+      <div class="sig-wrap" id="sigbox-cli">
+        <canvas id="canvas-cli" style="width:100%;height:100%"></canvas>
+        <div class="sig-hint">Firma qui con il dito</div>
+        <button class="sig-clear" onclick="clearSig('canvas-cli')">Cancella</button>
+      </div>
+    </div>
+
+    <div class="btn-nav">
+      <button class="btn-secondary" onclick="goStep(2)">← Indietro</button>
+      <button class="btn-primary" onclick="generaPDF()">📥 Genera e scarica PDF</button>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const { jsPDF } = window.jspdf;
+
+const TECNICI = ['Lorenzo Chialatri','Antonio Chialastri','Giuseppe Lo Piccolo','Stefano Malizzi','Giuseppe Argirò'];
+const LOGO_B64 = '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';
+
+let selectedTecnici = [];
+let ricCount = 0, smalCount = 0;
+
+function pad(n){return String(n).padStart(2,'0')}
+const now = new Date();
+const rapNum = String(now.getFullYear()).slice(2)+pad(now.getMonth()+1)+pad(now.getDate())+'-'+String(Math.floor(Math.random()*900)+100);
+const rapDate = pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear();
+document.getElementById('rnum').textContent = rapNum;
+document.getElementById('rdate').textContent = rapDate;
+
+// Build tecnici
+function buildTecGrid(){
+  const g = document.getElementById('tec-grid');
+  g.innerHTML = '';
+  TECNICI.forEach(name=>{
+    const chip = document.createElement('div');
+    chip.className = 'tec-chip'+(selectedTecnici.includes(name)?' sel':'');
+    chip.innerHTML = `<div class="tec-chk"><span class="tec-chk-mark">✓</span></div><span class="tec-name">${name}</span>`;
+    chip.onclick = ()=>{
+      if(selectedTecnici.includes(name)) selectedTecnici = selectedTecnici.filter(t=>t!==name);
+      else selectedTecnici.push(name);
+      chip.classList.toggle('sel');
+      updateFirmaSel(); autosave();
+    };
+    g.appendChild(chip);
+  });
+}
+buildTecGrid();
+
+function updateFirmaSel(){
+  const sel = document.getElementById('tec-firma-sel');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Seleziona...</option>';
+  (selectedTecnici.length ? selectedTecnici : TECNICI).forEach(n=>{
+    const o = document.createElement('option');
+    o.value=n; o.textContent=n; if(n===cur)o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+// Ricambi
+function addRicambio(cod='',desc='',qty=''){
+  ricCount++;
+  const id='ric-'+ricCount;
+  const div=document.createElement('div');
+  div.className='ric-card'; div.id=id;
+  div.innerHTML=`<button class="ric-del" onclick="document.getElementById('${id}').remove();autosave()">×</button>
+    <div class="ric-row2">
+      <div><label>Codice</label><input type="text" placeholder="Es. ATC-1234" value="${cod}" oninput="autosave()"></div>
+      <div><label>Descrizione</label><input type="text" placeholder="Nome ricambio" value="${desc}" oninput="autosave()"></div>
+    </div>
+    <div style="width:50%"><label>Quantità</label><input type="text" placeholder="Es. 2 pz" value="${qty}" oninput="autosave()"></div>`;
+  document.getElementById('ric-list').appendChild(div);
+}
+function addSmaltimento(desc='',qty=''){
+  smalCount++;
+  const id='smal-'+smalCount;
+  const row=document.createElement('div');
+  row.className='mat-row'; row.id=id;
+  row.innerHTML=`<input type="text" placeholder="Descrizione materiale" style="flex:2" value="${desc}" oninput="autosave()"><input type="text" placeholder="Qtà" style="width:70px;flex:none" value="${qty}" oninput="autosave()"><button class="mat-del" onclick="document.getElementById('${id}').remove();autosave()">×</button>`;
+  document.getElementById('smal-list').appendChild(row);
+}
+function getRicambi(){
+  return [...document.querySelectorAll('[id^="ric-"]')].map(r=>{
+    const i=r.querySelectorAll('input');
+    return {codice:i[0]?.value||'',desc:i[1]?.value||'',qty:i[2]?.value||''};
+  }).filter(r=>r.codice||r.desc);
+}
+function getSmaltimento(){
+  return [...document.querySelectorAll('[id^="smal-"]')].map(r=>{
+    const i=r.querySelectorAll('input'); return {desc:i[0]?.value||'',qty:i[1]?.value||''};
+  }).filter(r=>r.desc);
+}
+
+// Navigation
+function goStep(n){
+  if(n===2){
+    if(!document.getElementById('cli-nome').value.trim()){showToast('Inserisci la ragione sociale cliente');return}
+    if(!document.getElementById('int-tipo').value){showToast('Seleziona il tipo di intervento');return}
+    if(!document.getElementById('int-desc').value.trim()){showToast("Descrivi l'intervento eseguito");return}
+  }
+  for(let i=1;i<=3;i++){
+    document.getElementById('step'+i).style.display=i===n?'block':'none';
+    document.getElementById('dot'+i).classList.toggle('active',i<=n);
+  }
+  if(n===3){updateFirmaSel();setTimeout(()=>{initCanvas('canvas-tec');initCanvas('canvas-cli')},150);}
+  window.scrollTo(0,0);
+}
+
+// Signatures
+const sigData={};
+function initCanvas(id){
+  const canvas=document.getElementById(id);
+  const box=canvas.parentElement;
+  canvas.width=box.offsetWidth||340; canvas.height=box.offsetHeight||130;
+  const ctx=canvas.getContext('2d');
+  ctx.strokeStyle='#1C1C1C'; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
+  let drawing=false,lx=0,ly=0;
+  function pos(e){
+    const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height;
+    if(e.touches)return{x:(e.touches[0].clientX-r.left)*sx,y:(e.touches[0].clientY-r.top)*sy};
+    return{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};
+  }
+  canvas.addEventListener('pointerdown',e=>{drawing=true;const p=pos(e);lx=p.x;ly=p.y;e.preventDefault()},{passive:false});
+  canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;sigData[id]=true;e.preventDefault()},{passive:false});
+  canvas.addEventListener('pointerup',()=>drawing=false);
+  canvas.addEventListener('pointerleave',()=>drawing=false);
+}
+function clearSig(id){const c=document.getElementById(id);c.getContext('2d').clearRect(0,0,c.width,c.height);sigData[id]=false;}
+
+// Autosave
+function getFormData(){
+  return{
+    'cli-nome':document.getElementById('cli-nome').value,
+    'cli-piva':document.getElementById('cli-piva').value,
+    'cli-cf':document.getElementById('cli-cf').value,
+    'cli-addr':document.getElementById('cli-addr').value,
+    'cli-tel':document.getElementById('cli-tel').value,
+    'cli-email':document.getElementById('cli-email').value,
+    'cli-ref':document.getElementById('cli-ref').value,
+    'mac-marca':document.getElementById('mac-marca').value,
+    'mac-modello':document.getElementById('mac-modello').value,
+    'mac-matricola':document.getElementById('mac-matricola').value,
+    'mac-ore':document.getElementById('mac-ore').value,
+    'int-tipo':document.getElementById('int-tipo').value,
+    'int-desc':document.getElementById('int-desc').value,
+    'int-note':document.getElementById('int-note').value,
+    'man-ord':document.getElementById('man-ord').value,
+    'man-str':document.getElementById('man-str').value,
+    'man-km':document.getElementById('man-km').value,
+    'clit-nome':document.getElementById('clit-nome').value,
+    selectedTecnici,
+    ricambi:getRicambi(),
+    smaltimento:getSmaltimento()
+  };
+}
+function autosave(){try{localStorage.setItem('cla_rapportino_draft',JSON.stringify(getFormData()));}catch(e){}}
+function loadDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem('cla_rapportino_draft'));
+    if(!d)return;
+    ['cli-nome','cli-piva','cli-cf','cli-addr','cli-tel','cli-email','cli-ref','mac-marca','mac-modello','mac-matricola','mac-ore','int-tipo','int-desc','int-note','man-ord','man-str','man-km','clit-nome'].forEach(k=>{
+      const el=document.getElementById(k);if(el)el.value=d[k]||'';
+    });
+    selectedTecnici=d.selectedTecnici||[];
+    buildTecGrid();
+    document.getElementById('ric-list').innerHTML='';ricCount=0;
+    (d.ricambi||[]).forEach(r=>addRicambio(r.codice,r.desc,r.qty));
+    document.getElementById('smal-list').innerHTML='';smalCount=0;
+    (d.smaltimento||[]).forEach(r=>addSmaltimento(r.desc,r.qty));
+    document.getElementById('draft-bar').classList.remove('show');
+    showToast('Bozza ripresa ✓');
+  }catch(e){}
+}
+function clearDraft(){localStorage.removeItem('cla_rapportino_draft');document.getElementById('draft-bar').classList.remove('show');showToast('Bozza eliminata');}
+try{if(localStorage.getItem('cla_rapportino_draft'))document.getElementById('draft-bar').classList.add('show');}catch(e){}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// PDF GENERATION
+function generaPDF(){
+  const tecFirma=document.getElementById('tec-firma-sel').value;
+  if(!tecFirma){showToast('Seleziona il tecnico firmatario');return}
+  if(!document.getElementById('clit-nome').value.trim()){showToast('Inserisci il nome del firmatario cliente');return}
+
+
+  // QR
+  const qrDiv=document.createElement('div');
+  qrDiv.style.cssText='position:fixed;left:-9999px;top:0;width:128px;height:128px';
+  document.body.appendChild(qrDiv);
+  // QR essenziale: solo dati identificativi (max ~200 caratteri)
+  const qrText=`${rapNum}|${rapDate}|${document.getElementById('cli-nome').value.slice(0,30)}|${document.getElementById('mac-matricola').value}|${tecFirma.split(' ')[1]||tecFirma}`;
+  new QRCode(qrDiv,{text:qrText,width:128,height:128,correctLevel:QRCode.CorrectLevel.M});
+
+  setTimeout(()=>{
+    const qrImg=qrDiv.querySelector('canvas')?.toDataURL('image/png')||qrDiv.querySelector('img')?.src;
+    buildPDF(tecFirma,qrImg);
+    document.body.removeChild(qrDiv);
+  },350);
+}
+
+function buildPDF(tecFirma,qrImg){
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const PW=210,ML=15,MR=15,CW=PW-ML-MR;
+  let y=15;
+
+  // ── HEADER ──
+  // Sfondo bianco, logo a sinistra
+  doc.addImage('data:image/jpeg;base64,'+LOGO_B64,'JPEG',ML,y,48,48*(72/281));
+  // Dati azienda
+  const ax=ML+52;
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(30,30,30);
+  doc.text('Via del Poggio 2 – 04011 Aprilia (LT)',ax,y+4);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(100,100,100);
+  doc.text('P.IVA 02954480592   |   info@clacompressori.it',ax,y+9);
+  doc.text('Tel. 06 86925851   |   N. Verde +39 027 442285',ax,y+14);
+  // Numero rapportino
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(30,30,30);
+  doc.text('N° '+rapNum,PW-MR,y+4,{align:'right'});
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
+  doc.text(rapDate,PW-MR,y+10,{align:'right'});
+  // Striscia blu
+  y+=20;
+  doc.setFillColor(26,78,140);doc.rect(0,y,PW,2,'F');
+  y+=5;
+  doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(30,30,30);
+  doc.text('RAPPORTINO DI LAVORO',ML,y+4);
+  doc.setDrawColor(224,224,220);doc.setLineWidth(0.4);doc.line(ML,y+7,PW-MR,y+7);
+  y+=12;
+
+  // helper functions
+  function secHead(title){
+    doc.setFillColor(242,242,240);doc.rect(ML,y,CW,6.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(100,100,100);
+    doc.text(title.toUpperCase(),ML+3,y+4.5);y+=10;
+  }
+  function fld(label,val,half,xoff){
+    const x=xoff||ML,w=half?CW/2-4:CW;
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(140,140,140);
+    doc.text(label,x,y);
+    doc.setFontSize(9);doc.setTextColor(25,25,25);
+    const lines=doc.splitTextToSize(val||'—',w);
+    doc.text(lines,x,y+4.5);
+    return lines.length*4.2+2;
+  }
+  function checkPage(need=18){if(y+need>272){doc.addPage();y=15;}}
+
+  // ── CLIENTE ──
+  secHead('Dati cliente');
+  let h=fld('Ragione sociale',document.getElementById('cli-nome').value);y+=h+1;
+  fld('Partita IVA',document.getElementById('cli-piva').value,true,ML);
+  fld('Cod. fiscale',document.getElementById('cli-cf').value,true,ML+CW/2+3);y+=9;
+  h=fld('Indirizzo',document.getElementById('cli-addr').value);y+=h+1;
+  fld('Telefono',document.getElementById('cli-tel').value,true,ML);
+  fld('Email',document.getElementById('cli-email').value,true,ML+CW/2+3);y+=9;
+  h=fld('Referente',document.getElementById('cli-ref').value);y+=h+4;
+
+  // ── MACCHINA ──
+  checkPage();secHead('Dati macchina');
+  fld('Marca',document.getElementById('mac-marca').value,true,ML);
+  fld('Modello',document.getElementById('mac-modello').value,true,ML+CW/2+3);y+=9;
+  fld('Matricola',document.getElementById('mac-matricola').value,true,ML);
+  fld('Ore di utilizzo',(document.getElementById('mac-ore').value||'—')+' h',true,ML+CW/2+3);y+=9;
+
+  // ── INTERVENTO ──
+  checkPage();secHead('Intervento');
+  h=fld('Tipo di intervento',document.getElementById('int-tipo').value);y+=h+1;
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(140,140,140);doc.text('Descrizione',ML,y);y+=4.5;
+  doc.setFontSize(9);doc.setTextColor(25,25,25);
+  const dL=doc.splitTextToSize(document.getElementById('int-desc').value||'—',CW);
+  checkPage(dL.length*4.2+6);doc.text(dL,ML,y);y+=dL.length*4.2+3;
+  if(document.getElementById('int-note').value){
+    checkPage();
+    doc.setFontSize(7.5);doc.setTextColor(140,140,140);doc.text('Note',ML,y);y+=4.5;
+    doc.setFontSize(9);doc.setTextColor(25,25,25);
+    const nL=doc.splitTextToSize(document.getElementById('int-note').value,CW);
+    doc.text(nL,ML,y);y+=nL.length*4.2+3;
+  }
+  y+=2;
+
+  // ── TECNICI ──
+  checkPage();secHead('Tecnici coinvolti');
+  h=fld('',selectedTecnici.length?selectedTecnici.join('   ·   '):tecFirma);y+=h+4;
+
+  // ── MANODOPERA ──
+  checkPage();secHead('Manodopera e trasferta');
+  fld('Ore ordinarie',(document.getElementById('man-ord').value||'0')+' h',true,ML);
+  fld('Ore straordinarie',(document.getElementById('man-str').value||'0')+' h',true,ML+CW/2+3);y+=9;
+  h=fld('Km percorsi',(document.getElementById('man-km').value||'0')+' km');y+=h+4;
+
+  // ── RICAMBI ──
+  const ric=getRicambi();
+  if(ric.length){
+    checkPage();secHead('Ricambi utilizzati');
+    // intestazioni colonne
+    doc.setFillColor(235,235,232);doc.rect(ML,y,CW,5.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(100,100,100);
+    const c1=CW*0.24,c2=CW*0.53,c3=CW*0.23;
+    doc.text('Codice',ML+2,y+4);doc.text('Descrizione',ML+c1+2,y+4);doc.text('Qtà',ML+c1+c2+2,y+4);
+    y+=6.5;
+    ric.forEach((r,i)=>{
+      checkPage(8);
+      if(i%2===0){doc.setFillColor(250,250,248);doc.rect(ML,y,CW,6,'F');}
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(25,25,25);
+      doc.text(doc.splitTextToSize(r.codice,c1-3)[0]||'',ML+2,y+4.2);
+      doc.text(doc.splitTextToSize(r.desc,c2-3)[0]||'',ML+c1+2,y+4.2);
+      doc.text(r.qty||'',ML+c1+c2+2,y+4.2);
+      y+=6;
+    });y+=3;
+  }
+
+  // ── SMALTIMENTO ──
+  const smal=getSmaltimento();
+  if(smal.length){
+    checkPage();secHead('Materiale ritirato per smaltimento');
+    doc.setFillColor(235,235,232);doc.rect(ML,y,CW,5.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(100,100,100);
+    doc.text('Descrizione',ML+2,y+4);doc.text('Qtà',PW-MR-2,y+4,{align:'right'});
+    y+=6.5;
+    smal.forEach((r,i)=>{
+      checkPage(8);
+      if(i%2===0){doc.setFillColor(250,250,248);doc.rect(ML,y,CW,6,'F');}
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(25,25,25);
+      doc.text(r.desc,ML+2,y+4.2);
+      doc.text(r.qty||'',PW-MR-2,y+4.2,{align:'right'});
+      y+=6;
+    });y+=3;
+  }
+
+  // ── FIRME ──
+  checkPage(55);secHead('Firme');
+  const fw=(CW-8)/2;
+  doc.setDrawColor(190,190,190);doc.setLineWidth(0.5);
+  doc.rect(ML,y,fw,32);doc.rect(ML+fw+8,y,fw,32);
+  // immagini firma
+  const tImg=document.getElementById('canvas-tec').toDataURL('image/png');
+  const cImg=document.getElementById('canvas-cli').toDataURL('image/png');
+  doc.addImage(tImg,'PNG',ML+1,y+1,fw-2,28);
+  doc.addImage(cImg,'PNG',ML+fw+9,y+1,fw-2,28);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
+  doc.text('Tecnico: '+tecFirma,ML,y+35);
+  doc.text('Cliente: '+document.getElementById('clit-nome').value,ML+fw+8,y+35);
+  y+=40;
+
+  // QR
+  if(qrImg){
+    checkPage(32);
+    doc.addImage(qrImg,'PNG',PW-MR-26,y,26,26);
+    doc.setTextColor(170,170,170);doc.setFontSize(6.5);
+    doc.text('QR tracciabilità',PW-MR-26,y+28);
+  }
+
+  // ── FOOTER su ogni pagina ──
+  const tot=doc.internal.getNumberOfPages();
+  for(let p=1;p<=tot;p++){
+    doc.setPage(p);
+    doc.setDrawColor(200,200,200);doc.setLineWidth(0.4);doc.line(ML,284,PW-MR,284);
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(160,160,160);
+    doc.text('C.L.A. Compressori Srl  ·  Via del Poggio 2, 04011 Aprilia (LT)  ·  info@clacompressori.it  ·  Tel. 06 86925851',ML,288);
+    doc.text('Pag. '+p+'/'+tot,PW-MR,288,{align:'right'});
+  }
+
+  // Download cross-browser
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS) {
+    // iOS Safari: apre in nuova scheda, l'utente può condividere/salvare
+    const url = doc.output('bloburl');
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('✓ PDF aperto — usa Condividi per salvarlo');
+  } else {
+    // Desktop e Android: download diretto
+    doc.save('rapportino_CLA_' + rapNum + '.pdf');
+    showToast('✓ PDF scaricato');
+  }
+  localStorage.removeItem('cla_rapportino_draft');
+}
+</script>
+</body>
+</html>
