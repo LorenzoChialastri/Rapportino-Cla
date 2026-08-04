@@ -399,9 +399,10 @@ function addRicambio(cod='',desc='',qty=''){
   const id='ric-'+ricCount;
   const div=document.createElement('div');
   div.className='ric-card'; div.id=id;
+  const codBorder=cod?'#E2E8F0':'#FCA5A5';
   div.innerHTML=`<button class="ric-del" onclick="document.getElementById('${id}').remove();autosave()">×</button>
     <div class="ric-row2">
-      <div><label>Codice</label><input type="text" placeholder="Es. ATC-1234" value="${cod}" oninput="autosave()"></div>
+      <div><label>Codice <span style="color:#DC2626;font-size:11px">★ obbligatorio</span></label><input type="text" placeholder="Es. ATC-1234" value="${cod}" oninput="autosave();this.style.borderColor=this.value.trim()?'#E2E8F0':'#FCA5A5'" style="border-color:${codBorder}"></div>
       <div><label>Descrizione</label><input type="text" placeholder="Nome ricambio" value="${desc}" oninput="autosave()"></div>
     </div>
     <div style="width:50%"><label>Quantità</label><input type="text" placeholder="Es. 2 pz" value="${qty}" oninput="autosave()"></div>`;
@@ -519,6 +520,10 @@ function showToast(msg){
 
 // PDF GENERATION
 function generaPDF(){
+  if(!checkCodiciObbligatori()){
+    showToast('⚠ Inserisci il codice per tutti i ricambi prima di generare il PDF');
+    return;
+  }
   const tecFirma=document.getElementById('tec-firma-sel').value;
   if(!tecFirma){showToast('Seleziona il tecnico firmatario');return}
   if(!document.getElementById('clit-nome').value.trim()){showToast('Inserisci il nome del firmatario cliente');return}
