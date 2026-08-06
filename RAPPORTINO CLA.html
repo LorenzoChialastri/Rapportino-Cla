@@ -492,7 +492,7 @@ function getFormData(){
     smaltimento:getSmaltimento()
   };
 }
-function autosave(){try{localStorage.setItem('cla_rapportino_draft',JSON.stringify(getFormData()));}catch(e){}}
+function autosave(){try{if(typeof Storage!=='undefined')localStorage.setItem('cla_rapportino_draft',JSON.stringify(getFormData()));}catch(e){}}
 function loadDraft(){
   try{
     const d=JSON.parse(localStorage.getItem('cla_rapportino_draft'));
@@ -519,6 +519,17 @@ function showToast(msg){
 }
 
 // PDF GENERATION
+function checkCodiciObbligatori(){
+  var ok=true;
+  document.querySelectorAll('#ric-list .ric-card').forEach(function(card){
+    var inputs=card.querySelectorAll('input[type="text"]');
+    if(inputs[0]&&!inputs[0].value.trim()){
+      inputs[0].style.borderColor='#FCA5A5';
+      ok=false;
+    }
+  });
+  return ok;
+}
 function generaPDF(){
   if(!checkCodiciObbligatori()){
     showToast('⚠ Inserisci il codice per tutti i ricambi prima di generare il PDF');
@@ -727,25 +738,23 @@ function buildPDF(tecFirma,qrImg){
     doc.text('Pag. '+p+'/'+tot,PW-MR,288,{align:'right'});
   }
 
-  // Download cross-browser
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  if (isIOS) {
-    // iOS Safari: apre in nuova scheda, l'utente può condividere/salvare
-    const url = doc.output('bloburl');
-    const a = document.createElement('a');
-    a.href = url;
+  // Download cross-browser — metodo universale
+  try {
+    var pdfBlob = doc.output('blob');
+    var blobUrl = URL.createObjectURL(pdfBlob);
+    var a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = 'rapportino_CLA_' + rapNum + '.pdf';
     a.target = '_blank';
-    a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    showToast('✓ PDF aperto — usa Condividi per salvarlo');
-  } else {
-    // Desktop e Android: download diretto
-    doc.save('rapportino_CLA_' + rapNum + '.pdf');
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 1500);
     showToast('✓ PDF scaricato');
+  } catch(e) {
+    doc.save('rapportino_CLA_' + rapNum + '.pdf');
+    showToast('✓ PDF salvato');
   }
-  localStorage.removeItem('cla_rapportino_draft');
+  try { localStorage.removeItem('cla_rapportino_draft'); } catch(e) {}
 }
 </script>
 </body>
