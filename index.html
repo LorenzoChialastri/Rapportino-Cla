@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLA Compressori — Portale Interno</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap');
+
+  :root {
+    --navy: #0F1E30;
+    --navy-mid: #1A2F4B;
+    --navy-light: #243F63;
+    --steel: #2E5F8A;
+    --blue: #2B7FD4;
+    --blue-light: #5BA3E8;
+    --gold: #C89A2E;
+    --gold-light: #E8B84B;
+    --white: #FFFFFF;
+    --off-white: #F4F7FB;
+    --gray-100: #EEF2F7;
+    --gray-300: #C8D4E0;
+    --gray-500: #7A90A8;
+    --gray-700: #3D5166;
+    --text: #0F1E30;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--off-white);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .site-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 60%, var(--navy-light) 100%);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(43,127,212,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .site-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--blue-light), var(--gold));
+  }
+
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .logo-mark {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(200,154,46,0.3);
+  }
+  .logo-mark svg { width: 32px; height: 32px; }
+
+  .header-text { flex: 1; }
+  .company-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .company-sub {
+    font-size: 12px;
+    color: var(--gray-300);
+    margin-top: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .header-date {
+    text-align: right;
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+  .header-date strong {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-300);
+  }
+
+  /* GRID */
+  .grid-primary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .grid-secondary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  /* APP CARD */
+  .app-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 24px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(15,30,48,0.06);
+    border: 1.5px solid var(--gray-100);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .app-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent, var(--blue));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s;
+  }
+  .app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(15,30,48,0.12);
+    border-color: var(--accent, var(--blue));
+  }
+  .app-card:hover::before { transform: scaleX(1); }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: var(--icon-bg, var(--gray-100));
+    flex-shrink: 0;
+  }
+  .card-body { flex: 1; }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 12px;
+    color: var(--gray-500);
+    line-height: 1.5;
+  }
+  .card-arrow {
+    align-self: flex-end;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+    font-size: 14px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .app-card:hover .card-arrow {
+    background: var(--accent, var(--blue));
+    color: white;
+  }
+
+  /* SMALL CARD */
+  .app-card.small {
+    padding: 18px;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+  .app-card.small .card-icon {
+    width: 40px; height: 40px;
+    font-size: 18px;
+    border-radius: 10px;
+  }
+  .app-card.small .card-title { font-size: 13px; margin-bottom: 2px; }
+  .app-card.small .card-desc { font-size: 11px; }
+
+  /* COLORS */
+  .c-blue { --accent: #2B7FD4; --icon-bg: #EBF5FF; }
+  .c-navy { --accent: #1A2F4B; --icon-bg: #E8EEF5; }
+  .c-green { --accent: #059669; --icon-bg: #ECFDF5; }
+  .c-orange { --accent: #D97706; --icon-bg: #FFFBEB; }
+  .c-red { --accent: #DC2626; --icon-bg: #FEF2F2; }
+  .c-purple { --accent: #7C3AED; --icon-bg: #F5F3FF; }
+  .c-teal { --accent: #0891B2; --icon-bg: #ECFEFF; }
+  .c-gold { --accent: #C89A2E; --icon-bg: #FFFBEB; }
+
+  /* FOOTER */
+  .site-footer {
+    background: var(--navy);
+    padding: 20px 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 8px;
+  }
+  .site-footer strong { color: var(--gray-300); }
+
+  /* WELCOME BAR */
+  .welcome-bar {
+    background: linear-gradient(90deg, var(--navy-mid), var(--navy-light));
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: white;
+  }
+  .welcome-icon { font-size: 28px; }
+  .welcome-text h2 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .welcome-text p { font-size: 13px; color: var(--gray-300); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .header-inner { flex-wrap: wrap; }
+    .header-date { display: none; }
+    .company-name { font-size: 22px; }
+    .grid-primary { grid-template-columns: 1fr; }
+    .grid-secondary { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 400px) {
+    .grid-secondary { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div style="display:flex;align-items:center;gap:16px;flex:1">
+      <img src="logo-cla.png" alt="CLA Compressori" style="height:52px;object-fit:contain">
+      <div class="company-sub" style="margin-top:0">Portale Operativo Interno &nbsp;·&nbsp; Aprilia (LT)</div>
+    </div>
+    <div class="header-date">
+      <strong id="ora">--:--</strong>
+      <span id="data-oggi"></span>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="welcome-bar">
+    <div class="welcome-icon">👋</div>
+    <div class="welcome-text">
+      <h2>Buongiorno — tutti gli strumenti CLA in un unico posto.</h2>
+      <p>Clicca su quello che ti serve. Ogni app si apre in una nuova scheda.</p>
+    </div>
+  </div>
+
+  <!-- OPERATIVO TECNICI -->
+  <div class="section-label">Operativo tecnici</div>
+  <div class="grid-primary">
+
+    <a href="https://lorenzochialastri.github.io/Rapportino-Cla/RAPPORTINO%20CLA.html" target="_blank" class="app-card c-blue">
+      <div class="card-icon">📝</div>
+      <div class="card-body">
+        <div class="card-title">Rapportino di Lavoro</div>
+        <div class="card-desc">Compila il rapportino di intervento dal telefono. Genera e scarica il PDF da firmare con il cliente.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="https://lorenzochialastri.github.io/CLA-OFFICINA/" target="_blank" class="app-card c-orange">
+      <div class="card-icon">🔧</div>
+      <div class="card-body">
+        <div class="card-title">Officina CLA</div>
+        <div class="card-desc">Gestione macchine in riparazione. Diagnosi, checklist materiali, stato lavorazione e PDF consuntivo.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="https://lorenzochialastri.github.io/CLA-Parco-Macchine/" target="_blank" class="app-card c-teal">
+      <div class="card-icon">🏭</div>
+      <div class="card-body">
+        <div class="card-title">Parco Macchine</div>
+        <div class="card-desc">Macchine CLA disponibili in officina e in giro. Traccia dove si trova ogni macchina e per quale motivo.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="https://lorenzochialastri.github.io/CLA-SOP-Tecnico/" target="_blank" class="app-card c-navy">
+      <div class="card-icon">📋</div>
+      <div class="card-body">
+        <div class="card-title">Manuale SOP Tecnici</div>
+        <div class="card-desc">Procedure operative per interventi su compressori a vite, pistoni, essiccatori e impianti. Step by step con checklist.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+  </div>
+
+  <!-- AMMINISTRAZIONE -->
+  <div class="section-label">Amministrazione e organizzazione</div>
+  <div class="grid-primary">
+
+    <a href="https://lorenzochialastri.github.io/CLA-Timbrature/" target="_blank" class="app-card c-green">
+      <div class="card-icon">🕐</div>
+      <div class="card-body">
+        <div class="card-title">Timbrature</div>
+        <div class="card-desc">Entrata, pausa, fine pausa e uscita. Registra la tua presenza ogni giorno dal telefono.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="https://lorenzochialastri.github.io/CLA-Offerte-Ordini/" target="_blank" class="app-card c-purple">
+      <div class="card-icon">📦</div>
+      <div class="card-body">
+        <div class="card-title">Offerte e Ordini</div>
+        <div class="card-desc">Richiedi offerte o ordini a Francesca. Indica urgenza e dettagli — lei aggiorna lo stato in tempo reale.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+  </div>
+
+  <!-- DOCUMENTI E RISORSE -->
+  <div class="section-label">Documenti e risorse</div>
+  <div class="grid-secondary">
+
+    
+
+    
+
+    
+
+    <a href="tel:+393404102949" class="app-card small c-red">
+      <div class="card-icon">📞</div>
+      <div class="card-body">
+        <div class="card-title">Chiama Tonino</div>
+        <div class="card-desc">340 410 2949 — urgenze tecniche</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="tel:+393498335185" class="app-card small c-navy">
+      <div class="card-icon">📞</div>
+      <div class="card-body">
+        <div class="card-title">Chiama Lorenzo</div>
+        <div class="card-desc">349 833 5185 — decisioni</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="tel:+393927442285" class="app-card small c-gold">
+      <div class="card-icon">🆘</div>
+      <div class="card-body">
+        <div class="card-title">Assistenza 24/7</div>
+        <div class="card-desc">392 74 42 285 — numero clienti</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <strong>C.L.A. Compressori S.r.l.</strong> &nbsp;·&nbsp; Via del Poggio 2, 04011 Aprilia (LT) &nbsp;·&nbsp; P.IVA 02954480592 &nbsp;·&nbsp; Portale uso interno
+</footer>
+
+<script>
+function aggiorna() {
+  var now = new Date();
+  document.getElementById('ora').textContent = now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('data-oggi').textContent = now.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+}
+aggiorna();
+setInterval(aggiorna, 1000);
+</script>
+
+</body>
+</html>
